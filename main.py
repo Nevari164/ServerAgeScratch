@@ -28,7 +28,7 @@ def update_cloud_variable(username, password, project_id):
             runtime_seconds = int(time.time() - start_time)
 
             # Update cloud variable
-            connection.set_cloud_variable("runtime", runtime_seconds)
+            connection.set_var("runtime", runtime_seconds)
 
             print(f"Updated runtime to {runtime_seconds} seconds.")
             time.sleep(1)  # Update every second
