@@ -1,66 +1,41 @@
-from fastapi import FastAPI, BackgroundTasks
 import scratchattach as scratch
 import time
+from fastapi import FastAPI
 
 app = FastAPI()
 
-# Global runtime tracker and connection
-start_time = None
-connection = None
+# Initialize Scratch cloud connection
+session = scratch.login("Prettingminecraft", "5arkansas6")
+project = session.connect_cloud(1097165205)  # Replace with your project ID
 
-def update_cloud_variable(username, password, project_id):
-    global start_time, connection
+# Global control variable
+should_update = True
 
-    # Log in and connect to Scratch
-    session = scratch.login(username, password)
-    connection = session.connect_cloud(project_id)
-
-    print("Connected to Scratch cloud variables.")
-
-    # Start tracking runtime
-    start_time = time.time()
-
-    try:
-        while True:
-            if connection is None:
-                break
-            # Calculate runtime in seconds
-            runtime_seconds = int(time.time() - start_time)
-
-            # Update cloud variable
-            connection.set_var("runtime", runtime_seconds)
-
-            print(f"Updated runtime to {runtime_seconds} seconds.")
-            time.sleep(1)  # Update every second
-    except Exception as e:
-        print("Error updating cloud variable:", e)
-
-@app.get("/")
-async def root():
-    return {"message": "Scratch Cloud Variable Updater"}
-
-@app.post("/start")
-async def start_updater(
-    username: str, password: str, project_id: str, background_tasks: BackgroundTasks
-):
-    """
-    Start updating the cloud variable in the background.
-    """
-    global start_time, connection
-    if connection is not None:
-        return {"error": "Updater is already running."}
-
-    background_tasks.add_task(update_cloud_variable, username, password, project_id)
-    return {"status": "Started updating cloud variable."}
-
+# Endpoint to stop the updater
 @app.post("/stop")
-async def stop_updater():
-    """
-    Stop the cloud variable updater.
-    """
-    global connection
-    if connection is None:
-        return {"error": "No updater is running."}
+async def stop_updating():
+    global should_update
+    should_update = False
+    return {"status": "Cloud variable updater stopped"}
 
-    connection = None
-    return {"status": "Stopped updating cloud variable."}
+# Endpoint to start the updater
+@app.post("/start")
+async def start_updating():
+    global should_update
+    if should_update:
+        return {"status": "Updater already running"}
+    should_update = True
+    return {"status": "Cloud variable updater started"}
+
+# Main cloud updater function
+def update_cloud_variable():
+    global should_update
+    start_time = time.time()
+    while should_update:
+        elapsed_time = int(time.time() - start_time)
+        project.set_var("runtime", elapsed_time)
+        time.sleep(1)
+
+# Run updater in background
+import threading
+threading.Thread(target=update_cloud_variable, daemon=True).start()
