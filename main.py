@@ -11,5 +11,5 @@ should_update = True
 start_time = time.time()
 while True:
  timer = int(time.time() - start_time) + offset
- project.set_var("runtime",timer)
+ project.set_var("runtime2",timer)
  time.sleep(1)
