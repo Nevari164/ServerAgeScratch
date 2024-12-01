@@ -10,7 +10,7 @@ offset = 49567
 should_update = True
 start_time = time.time()
 while True:
- global offset
+    global offset
     global start_time
     timer = int(time.time() - start_time) - offset
     project.set_var("runtime",timer)
