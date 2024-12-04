@@ -29,7 +29,7 @@ def update_timer():
         set = variables.set_cloud_variable(variable_name="runtime2", value=timer)  # Set a Cloud Variable
         if set:
          print("Cloud Variable Updated!")
-        project.set_var("runtime2", timer)
+       # project.set_var("runtime2", timer)
         time.sleep(1)
 
 # Start the background thread for the timer update
